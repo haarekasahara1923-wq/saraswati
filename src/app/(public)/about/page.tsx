@@ -1,7 +1,15 @@
 import styles from "./about.module.css";
-import Image from "next/image";
+import { db } from "@/db";
+import { aboutContent } from "@/db/schema";
 
-export default function AboutPage() {
+export const revalidate = 0;
+
+export default async function AboutPage() {
+  const items = await db.select().from(aboutContent);
+
+  const director = items.find((i) => i.role === "director");
+  const principal = items.find((i) => i.role === "principal");
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -10,30 +18,52 @@ export default function AboutPage() {
       </div>
 
       <section className={styles.contentSection}>
+        {/* Director */}
         <div className={styles.messageCard}>
           <div className={styles.imagePlaceholder}>
-            {/* AI Image or Uploaded via Admin */}
-            <span>Director Photo</span>
+            {director?.photoUrl ? (
+              <img
+                src={director.photoUrl}
+                alt={director.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
+              />
+            ) : (
+              <span>Director Photo</span>
+            )}
           </div>
           <div className={styles.textContent}>
             <h2 className={styles.roleTitle}>Director&apos;s Message</h2>
-            <h3 className={styles.name}>Mr. John Doe</h3>
+            <h3 className={styles.name}>{director?.name || "—"}</h3>
+            {director?.designation && (
+              <p style={{ color: "#777", marginBottom: "10px", fontStyle: "italic" }}>{director.designation}</p>
+            )}
             <p className={styles.message}>
-              "Education is not preparation for life; education is life itself. At Saraswati Convent School, we strive to provide an environment that fosters intellectual, physical, and emotional growth."
+              {director?.message || "Message coming soon..."}
             </p>
           </div>
         </div>
 
-        <div className={styles.messageCard} style={{ flexDirection: 'row-reverse' }}>
+        {/* Principal */}
+        <div className={styles.messageCard} style={{ flexDirection: "row-reverse" }}>
           <div className={styles.imagePlaceholder}>
-            {/* AI Image or Uploaded via Admin */}
-            <span>Principal Photo</span>
+            {principal?.photoUrl ? (
+              <img
+                src={principal.photoUrl}
+                alt={principal.name}
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "8px" }}
+              />
+            ) : (
+              <span>Principal Photo</span>
+            )}
           </div>
           <div className={styles.textContent}>
             <h2 className={styles.roleTitle}>Principal&apos;s Message</h2>
-            <h3 className={styles.name}>Mrs. Jane Smith</h3>
+            <h3 className={styles.name}>{principal?.name || "—"}</h3>
+            {principal?.designation && (
+              <p style={{ color: "#777", marginBottom: "10px", fontStyle: "italic" }}>{principal.designation}</p>
+            )}
             <p className={styles.message}>
-              "Our mission is to nurture the leaders of tomorrow. We focus on academic excellence combined with strong moral values to help our students navigate the challenges of the future."
+              {principal?.message || "Message coming soon..."}
             </p>
           </div>
         </div>

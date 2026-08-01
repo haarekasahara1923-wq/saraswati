@@ -17,6 +17,7 @@ export default function AdminSidebar() {
   const menuItems = [
     { name: "Dashboard", path: "/admin/dashboard", icon: "📊" },
     { name: "Gallery", path: "/admin/dashboard/gallery", icon: "🖼️" },
+    { name: "Announcements", path: "/admin/dashboard/announcements", icon: "📢" },
     { name: "About Us", path: "/admin/dashboard/about", icon: "👥" },
     { name: "Contact Info", path: "/admin/dashboard/contact", icon: "📞" },
     { name: "Settings", path: "/admin/dashboard/settings", icon: "⚙️" },
