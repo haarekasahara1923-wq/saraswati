@@ -1,0 +1,31 @@
+.tickerWrapper {
+  background-color: var(--primary-color);
+  color: var(--white);
+  padding: 8px 0;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.tickerContent {
+  white-space: nowrap;
+  animation: ticker 25s linear infinite;
+  display: inline-block;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.tickerContent:hover {
+  animation-play-state: paused;
+}
+
+@keyframes ticker {
+  0% { transform: translateX(100vw); }
+  100% { transform: translateX(-100%); }
+}
+
+.announcementItem {
+  margin-right: 50px;
+  display: inline-block;
+}

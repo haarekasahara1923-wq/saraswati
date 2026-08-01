@@ -1,0 +1,57 @@
+import { NextResponse } from "next/server";
+import { db } from "@/db";
+import { galleryItems } from "@/db/schema";
+import { desc, eq } from "drizzle-orm";
+
+export async function GET() {
+  try {
+    const items = await db.select().from(galleryItems).orderBy(desc(galleryItems.createdAt));
+    return NextResponse.json({ success: true, items });
+  } catch (error) {
+    console.error("Failed to fetch gallery items:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const data = await request.json();
+    const { title, type, cloudinaryUrl, cloudinaryPublicId, thumbnailUrl, category, description } = data;
+
+    if (!title || !cloudinaryUrl || !cloudinaryPublicId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const newItem = await db.insert(galleryItems).values({
+      title,
+      type: type || "photo",
+      cloudinaryUrl,
+      cloudinaryPublicId,
+      thumbnailUrl,
+      category,
+      description,
+    }).returning();
+
+    return NextResponse.json({ success: true, item: newItem[0] });
+  } catch (error) {
+    console.error("Failed to insert gallery item:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: "ID is required" }, { status: 400 });
+    }
+
+    await db.delete(galleryItems).where(eq(galleryItems.id, parseInt(id)));
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Failed to delete gallery item:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

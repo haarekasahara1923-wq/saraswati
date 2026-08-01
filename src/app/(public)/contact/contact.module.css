@@ -1,0 +1,77 @@
+.container {
+  padding: 40px 5%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.title {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 40px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: stretch;
+}
+
+.infoCard {
+  background: var(--white);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.infoCard h3 {
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+}
+
+.infoCard p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.detailItem {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+}
+
+.icon {
+  font-size: 1.5rem;
+}
+
+.detailItem strong {
+  display: block;
+  color: var(--secondary-color);
+  margin-bottom: 5px;
+}
+
+.detailItem p {
+  margin: 0;
+  color: var(--text-dark);
+}
+
+.mapCard {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+  min-height: 400px;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
