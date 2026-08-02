@@ -29,11 +29,15 @@ export default async function GalleryPage() {
       </div>
 
       {mappedItems.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 20px", color: "#888" }}>
-          <p style={{ fontSize: "1.2rem" }}>No media uploaded yet. Check back soon!</p>
+        <div className={styles.gridWrap}>
+          <div className={styles.emptyState}>
+            <p>No media uploaded yet. Check back soon! 📸</p>
+          </div>
         </div>
       ) : (
-        <GalleryGrid items={mappedItems} />
+        <div className={styles.gridWrap}>
+          <GalleryGrid items={mappedItems} />
+        </div>
       )}
     </div>
   );

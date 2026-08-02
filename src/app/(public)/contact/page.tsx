@@ -1,5 +1,4 @@
 import styles from "./contact.module.css";
-import LeadForm from "@/components/LeadForm";
 import { db } from "@/db";
 import { contactInfo } from "@/db/schema";
 
@@ -24,12 +23,17 @@ export default async function ContactPage() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Contact Us</h1>
+      {/* Hero Banner */}
+      <div className={styles.hero}>
+        <h1 className={styles.title}>Contact Us</h1>
+        <p className={styles.heroSub}>We&apos;d love to hear from you — reach out for admissions, queries, or feedback.</p>
+      </div>
 
       <div className={styles.grid}>
+        {/* Info Card */}
         <div className={styles.infoCard}>
           <h3>Get In Touch</h3>
-          <p>We would love to hear from you. Reach out to us for admissions, queries, or feedback.</p>
+          <p>Our team is available Monday to Saturday, 8 AM – 4 PM. We&apos;ll get back to you as soon as possible.</p>
 
           <div className={styles.contactDetails}>
             <div className={styles.detailItem}>
@@ -44,9 +48,7 @@ export default async function ContactPage() {
               <span className={styles.icon}>📞</span>
               <div>
                 <strong>Phone</strong>
-                <p>
-                  <a href={`tel:${phone}`}>{phone}</a>
-                </p>
+                <p><a href={`tel:${phone}`}>{phone}</a></p>
               </div>
             </div>
 
@@ -54,9 +56,15 @@ export default async function ContactPage() {
               <span className={styles.icon}>✉️</span>
               <div>
                 <strong>Email</strong>
-                <p>
-                  <a href={`mailto:${email}`}>{email}</a>
-                </p>
+                <p><a href={`mailto:${email}`}>{email}</a></p>
+              </div>
+            </div>
+
+            <div className={styles.detailItem}>
+              <span className={styles.icon}>🕐</span>
+              <div>
+                <strong>School Hours</strong>
+                <p>Monday – Saturday: 8:00 AM – 4:00 PM</p>
               </div>
             </div>
           </div>
@@ -65,26 +73,25 @@ export default async function ContactPage() {
             href={`https://wa.me/${whatsapp}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="btn-primary"
-            style={{ marginTop: "20px", width: "100%", display: "flex", justifyContent: "center", gap: "10px", textDecoration: "none" }}
+            className={styles.whatsappBtn}
           >
-            📱 Message us on WhatsApp
+            📱 Message on WhatsApp
           </a>
         </div>
 
+        {/* Map Card */}
         <div className={styles.mapCard}>
           <iframe
             src={mapUrl}
             width="100%"
             height="100%"
-            style={{ border: 0 }}
+            style={{ border: 0, minHeight: "480px" }}
             allowFullScreen={false}
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-          ></iframe>
+          />
         </div>
       </div>
     </div>
   );
 }
-
