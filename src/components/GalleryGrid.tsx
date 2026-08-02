@@ -48,12 +48,22 @@ export default function GalleryGrid({ items }: Props) {
       <div className={styles.grid}>
         {filteredItems.map(item => (
           <div key={item.id} className={styles.gridItem} onClick={() => setActiveItem(item)}>
-            <img 
-              src={item.thumbnailUrl || item.url} 
-              alt={item.title} 
-              className={styles.itemImage}
-              loading="lazy"
-            />
+            {item.type === "video" ? (
+              <video 
+                src={item.thumbnailUrl || item.url}
+                className={styles.itemImage}
+                muted
+                playsInline
+                preload="metadata"
+              />
+            ) : (
+              <img 
+                src={item.thumbnailUrl || item.url} 
+                alt={item.title} 
+                className={styles.itemImage}
+                loading="lazy"
+              />
+            )}
             {item.type === "video" && (
               <div className={styles.playIcon}>▶️</div>
             )}
