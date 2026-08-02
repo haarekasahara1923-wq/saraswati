@@ -47,18 +47,40 @@ export default function AdminAnnouncements() {
   };
 
   const handleToggle = async (item: any) => {
-    await fetch("/api/announcements", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: item.id, text: item.text, isActive: !item.isActive }),
-    });
-    fetchItems();
+    setMsg("");
+    try {
+      const res = await fetch("/api/announcements", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item.id, text: item.text, isActive: !item.isActive, displayOrder: item.displayOrder ?? 0 }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMsg("Announcement status updated!");
+        fetchItems();
+      } else {
+        setMsg("Error: " + (data.error || "Update failed"));
+      }
+    } catch {
+      setMsg("Error updating announcement");
+    }
   };
 
   const handleDelete = async (id: number) => {
     if (!confirm("Delete this announcement?")) return;
-    await fetch(`/api/announcements?id=${id}`, { method: "DELETE" });
-    fetchItems();
+    setMsg("");
+    try {
+      const res = await fetch(`/api/announcements?id=${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (data.success) {
+        setMsg("Announcement deleted!");
+        fetchItems();
+      } else {
+        setMsg("Error: " + (data.error || "Delete failed"));
+      }
+    } catch {
+      setMsg("Error deleting announcement");
+    }
   };
 
   return (

@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnouncementBar from "@/components/AnnouncementBar";
 import { db } from "@/db";
-import { announcements } from "@/db/schema";
+import { announcements, contactInfo, siteSettings } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
 
 export const revalidate = 0;
@@ -12,8 +12,10 @@ export default async function PublicLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // Fetch live announcements from DB
   let announcementTexts: string[] = [];
+  let contact: any = null;
+  let settingsMap: Record<string, string> = {};
+
   try {
     const rows = await db
       .select()
@@ -21,17 +23,31 @@ export default async function PublicLayout({
       .where(eq(announcements.isActive, true))
       .orderBy(asc(announcements.displayOrder));
     announcementTexts = rows.map((r) => r.text);
+
+    const contactRows = await db.select().from(contactInfo).limit(1);
+    if (contactRows.length > 0) contact = contactRows[0];
+
+    const settingsRows = await db.select().from(siteSettings);
+    settingsRows.forEach((s) => {
+      if (s.key && s.value) settingsMap[s.key] = s.value;
+    });
   } catch {
-    // fallback to empty if DB fails
-    announcementTexts = [];
+    // fallback if DB fails
   }
+
+  const schoolName = settingsMap["school_name"] || "Saraswati Convent School";
+  const tagline = settingsMap["school_tagline"] || "Nurturing minds and shaping futures with quality education in Gwalior.";
+  const phone = contact?.phone || "+91-9174081035";
+  const email = contact?.email || "info@saraswaticonventschool.com";
+  const address = contact?.address || "Ikhara, Morar, Gwalior (MP)";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <AnnouncementBar announcements={announcementTexts} />
-      <Header />
+      <Header phone={phone} schoolName={schoolName} />
       <main style={{ flex: 1 }}>{children}</main>
-      <Footer />
+      <Footer schoolName={schoolName} tagline={tagline} address={address} phone={phone} email={email} />
     </div>
   );
 }
+

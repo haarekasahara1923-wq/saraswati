@@ -4,7 +4,12 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import styles from "./Header.module.css";
 
-export default function Header() {
+interface HeaderProps {
+  phone?: string;
+  schoolName?: string;
+}
+
+export default function Header({ phone = "+919174081035", schoolName = "Saraswati Convent School" }: HeaderProps) {
   const pathname = usePathname();
 
   const navLinks = [
@@ -25,7 +30,7 @@ export default function Header() {
           style={{ borderRadius: '50%' }}
         />
         <div className={styles.schoolName}>
-          Saraswati Convent<br />School
+          {schoolName}
         </div>
       </Link>
 
@@ -41,9 +46,10 @@ export default function Header() {
         ))}
       </nav>
 
-      <a href="tel:+919174081035" className={styles.callButton}>
+      <a href={`tel:${phone}`} className={styles.callButton}>
         📞 Call Now
       </a>
     </header>
   );
 }
+

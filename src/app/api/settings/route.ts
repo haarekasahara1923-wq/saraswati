@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { siteSettings } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -33,9 +36,15 @@ export async function POST(request: Request) {
       }
     }
 
+    revalidatePath("/");
+    revalidatePath("/about");
+    revalidatePath("/contact");
+    revalidatePath("/gallery");
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to save settings:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

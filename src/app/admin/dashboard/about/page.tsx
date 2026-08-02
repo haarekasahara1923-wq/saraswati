@@ -136,17 +136,26 @@ export default function AdminAbout() {
             <div style={{ marginBottom: "20px" }}>
               <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>Photo</label>
               {editItem.photoUrl && <img src={editItem.photoUrl} alt="preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "10px", display: "block" }} />}
-              <CldUploadWidget uploadPreset="saraswati_preset" onSuccess={(result: any) => {
-                const info = result.info;
-                setEditItem({ ...editItem, photoUrl: info.secure_url, photoPublicId: info.public_id });
-              }}>
-                {({ open }) => (
-                  <button type="button" onClick={() => open()}
-                    style={{ padding: "8px 16px", background: "#f5f5f5", border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer" }}>
-                    {editItem.photoUrl ? "Change Photo" : "Upload Photo"}
-                  </button>
-                )}
-              </CldUploadWidget>
+              
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "10px" }}>
+                <input 
+                  value={editItem.photoUrl || ""} 
+                  onChange={e => setEditItem({ ...editItem, photoUrl: e.target.value })}
+                  placeholder="Paste direct Image URL..."
+                  style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #ddd" }}
+                />
+                <CldUploadWidget uploadPreset="saraswati_preset" onSuccess={(result: any) => {
+                  const info = result.info;
+                  setEditItem({ ...editItem, photoUrl: info.secure_url, photoPublicId: info.public_id });
+                }}>
+                  {({ open }) => (
+                    <button type="button" onClick={() => open()}
+                      style={{ padding: "10px 16px", background: "#f5f5f5", border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer", whiteSpace: "nowrap" }}>
+                      ☁️ Upload
+                    </button>
+                  )}
+                </CldUploadWidget>
+              </div>
             </div>
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>

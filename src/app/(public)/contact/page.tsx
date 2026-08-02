@@ -1,19 +1,18 @@
-"use client";
-import { useState, useEffect } from "react";
 import styles from "./contact.module.css";
 import LeadForm from "@/components/LeadForm";
+import { db } from "@/db";
+import { contactInfo } from "@/db/schema";
 
-export default function ContactPage() {
-  const [isLeadFormOpen, setIsLeadFormOpen] = useState(false);
-  const [info, setInfo] = useState<any>(null);
+export const revalidate = 0;
 
-  useEffect(() => {
-    fetch("/api/contact")
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.success && data.info) setInfo(data.info);
-      });
-  }, []);
+export default async function ContactPage() {
+  let info: any = null;
+  try {
+    const rows = await db.select().from(contactInfo).limit(1);
+    if (rows.length > 0) info = rows[0];
+  } catch {
+    // fallback if DB query fails
+  }
 
   const phone = info?.phone || "+91-9174081035";
   const whatsapp = info?.whatsapp || "919174081035";
@@ -85,8 +84,7 @@ export default function ContactPage() {
           ></iframe>
         </div>
       </div>
-
-      <LeadForm isOpen={isLeadFormOpen} onClose={() => setIsLeadFormOpen(false)} />
     </div>
   );
 }
+

@@ -5,6 +5,17 @@ import { CldUploadWidget } from "next-cloudinary";
 export default function AdminGallery() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [msg, setMsg] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const [newItem, setNewItem] = useState({
+    title: "",
+    type: "photo",
+    cloudinaryUrl: "",
+    category: "General",
+    description: "",
+  });
 
   const fetchItems = async () => {
     setLoading(true);
@@ -27,29 +38,65 @@ export default function AdminGallery() {
 
   const handleDelete = async (id: number) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
+    setMsg("");
     try {
       const res = await fetch(`/api/gallery?id=${id}`, { method: "DELETE" });
       const data = await res.json();
       if (data.success) {
+        setMsg("Item deleted successfully!");
         fetchItems();
       } else {
-        alert("Delete failed");
+        setMsg("Error: " + (data.error || "Delete failed"));
       }
     } catch (err) {
-      console.error(err);
+      setMsg("Error deleting item");
     }
   };
 
-  const handleUploadSuccess = async (result: any) => {
-    const info = result.info;
-    
-    // Save to DB
+  const handleSaveManual = async () => {
+    if (!newItem.title.trim() || !newItem.cloudinaryUrl.trim()) {
+      setMsg("Error: Title and Image/Video URL are required.");
+      return;
+    }
+    setSaving(true);
+    setMsg("");
     try {
       const res = await fetch("/api/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "New Upload",
+          title: newItem.title.trim(),
+          type: newItem.type,
+          cloudinaryUrl: newItem.cloudinaryUrl.trim(),
+          thumbnailUrl: newItem.cloudinaryUrl.trim(),
+          category: newItem.category.trim() || "General",
+          description: newItem.description.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMsg("Media added successfully!");
+        setShowAddModal(false);
+        setNewItem({ title: "", type: "photo", cloudinaryUrl: "", category: "General", description: "" });
+        fetchItems();
+      } else {
+        setMsg("Error: " + (data.error || "Failed to save media"));
+      }
+    } catch {
+      setMsg("Error: Network failure");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleUploadSuccess = async (result: any) => {
+    const info = result.info;
+    try {
+      const res = await fetch("/api/gallery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: info.original_filename || "Cloudinary Upload",
           type: info.resource_type === "video" ? "video" : "photo",
           cloudinaryUrl: info.secure_url,
           cloudinaryPublicId: info.public_id,
@@ -59,44 +106,62 @@ export default function AdminGallery() {
       });
       const data = await res.json();
       if (data.success) {
+        setMsg("Cloudinary upload saved successfully!");
         fetchItems();
+      } else {
+        setMsg("Error saving Cloudinary upload: " + data.error);
       }
     } catch (err) {
-      console.error(err);
+      setMsg("Error saving Cloudinary media");
     }
   };
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h1 style={{ fontSize: '2rem', color: 'var(--secondary-color)' }}>Gallery Manager</h1>
         
-        <CldUploadWidget 
-          uploadPreset="saraswati_preset" 
-          onSuccess={handleUploadSuccess}
-          options={{ maxFiles: 5 }}
-        >
-          {({ open }) => {
-            return (
-              <button 
-                onClick={() => open()}
-                style={{ padding: '10px 20px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                + Upload Media
-              </button>
-            );
-          }}
-        </CldUploadWidget>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            style={{ padding: '10px 20px', background: 'var(--primary-color)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            + Add Media (URL / Form)
+          </button>
+          
+          <CldUploadWidget 
+            uploadPreset="saraswati_preset" 
+            onSuccess={handleUploadSuccess}
+            options={{ maxFiles: 5 }}
+          >
+            {({ open }) => {
+              return (
+                <button 
+                  onClick={() => open()}
+                  style={{ padding: '10px 20px', background: '#2e7d32', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+                >
+                  ☁️ Cloudinary Widget
+                </button>
+              );
+            }}
+          </CldUploadWidget>
+        </div>
       </div>
+
+      {msg && (
+        <div style={{ padding: "12px", borderRadius: "6px", marginBottom: "20px", background: msg.startsWith("Error") ? "#ffebee" : "#e8f5e9", color: msg.startsWith("Error") ? "#c62828" : "#2e7d32" }}>
+          {msg}
+        </div>
+      )}
 
       {loading ? (
         <p>Loading gallery items...</p>
       ) : items.length === 0 ? (
         <div style={{ padding: '40px', background: 'white', borderRadius: '8px', textAlign: 'center', color: '#888' }}>
-          No media found. Upload some photos or videos!
+          No media found. Click &quot;Add Media&quot; above to add photos or videos!
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
           {items.map(item => (
             <div key={item.id} style={{ background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
               <img 
@@ -118,6 +183,85 @@ export default function AdminGallery() {
           ))}
         </div>
       )}
+
+      {/* Add Media Modal */}
+      {showAddModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: "20px" }}>
+          <div style={{ background: "white", borderRadius: "12px", padding: "30px", width: "100%", maxWidth: "500px" }}>
+            <h2 style={{ marginTop: 0, color: "var(--secondary-color)" }}>Add Gallery Media</h2>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>Title *</label>
+              <input 
+                value={newItem.title} 
+                onChange={(e) => setNewItem({ ...newItem, title: e.target.value })} 
+                placeholder="e.g. Annual Sports Day 2024"
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>Media Type</label>
+              <select 
+                value={newItem.type} 
+                onChange={(e) => setNewItem({ ...newItem, type: e.target.value })}
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
+              >
+                <option value="photo">Photo</option>
+                <option value="video">Video</option>
+              </select>
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>Image / Media URL *</label>
+              <input 
+                value={newItem.cloudinaryUrl} 
+                onChange={(e) => setNewItem({ ...newItem, cloudinaryUrl: e.target.value })} 
+                placeholder="https://images.unsplash.com/... or Cloudinary URL"
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>Category</label>
+              <input 
+                value={newItem.category} 
+                onChange={(e) => setNewItem({ ...newItem, category: e.target.value })} 
+                placeholder="e.g. Sports, Events, Academics"
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
+              />
+            </div>
+
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "500" }}>Description</label>
+              <textarea 
+                value={newItem.description} 
+                onChange={(e) => setNewItem({ ...newItem, description: e.target.value })} 
+                rows={3}
+                placeholder="Brief description..."
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box", resize: "vertical" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button 
+                onClick={() => setShowAddModal(false)}
+                style={{ padding: "10px 20px", background: "#f5f5f5", border: "none", borderRadius: "6px", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleSaveManual} 
+                disabled={saving}
+                style={{ padding: "10px 20px", background: "var(--primary-color)", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", opacity: saving ? 0.7 : 1 }}
+              >
+                {saving ? "Saving..." : "Save Media"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+

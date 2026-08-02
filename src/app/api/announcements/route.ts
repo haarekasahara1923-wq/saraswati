@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { announcements } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
@@ -33,6 +36,9 @@ export async function POST(request: Request) {
       .values({ text, isActive: isActive ?? true, displayOrder: displayOrder ?? 0 })
       .returning();
 
+    revalidatePath("/");
+    revalidatePath("/admin/dashboard");
+
     return NextResponse.json({ success: true, item: newItem[0] });
   } catch (error) {
     console.error("Failed to create announcement:", error);
@@ -47,11 +53,19 @@ export async function PUT(request: Request) {
 
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
+    const updateData: any = {};
+    if (text !== undefined) updateData.text = text;
+    if (isActive !== undefined) updateData.isActive = isActive;
+    if (displayOrder !== undefined) updateData.displayOrder = displayOrder;
+
     const updated = await db
       .update(announcements)
-      .set({ text, isActive, displayOrder })
+      .set(updateData)
       .where(eq(announcements.id, id))
       .returning();
+
+    revalidatePath("/");
+    revalidatePath("/admin/dashboard");
 
     return NextResponse.json({ success: true, item: updated[0] });
   } catch (error) {
@@ -67,9 +81,14 @@ export async function DELETE(request: Request) {
     if (!id) return NextResponse.json({ error: "ID required" }, { status: 400 });
 
     await db.delete(announcements).where(eq(announcements.id, parseInt(id)));
+
+    revalidatePath("/");
+    revalidatePath("/admin/dashboard");
+
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Failed to delete announcement:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+

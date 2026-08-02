@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { db } from "@/db";
 import { aboutContent } from "@/db/schema";
 import { eq } from "drizzle-orm";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -28,9 +31,12 @@ export async function POST(request: Request) {
       designation,
       message,
       photoUrl,
-      photoPublicId,
+      photoPublicId: photoPublicId || null,
       displayOrder: displayOrder || 0,
     }).returning();
+
+    revalidatePath("/about");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, item: newItem[0] });
   } catch (error) {
@@ -48,10 +54,17 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: "ID is required" }, { status: 400 });
     }
 
+    const updateData: any = { role, name, designation, message, photoUrl };
+    if (photoPublicId !== undefined) updateData.photoPublicId = photoPublicId;
+    if (displayOrder !== undefined) updateData.displayOrder = displayOrder;
+
     const updated = await db.update(aboutContent)
-      .set({ role, name, designation, message, photoUrl, photoPublicId, displayOrder })
+      .set(updateData)
       .where(eq(aboutContent.id, id))
       .returning();
+
+    revalidatePath("/about");
+    revalidatePath("/");
 
     return NextResponse.json({ success: true, item: updated[0] });
   } catch (error) {
@@ -59,3 +72,4 @@ export async function PUT(request: Request) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
