@@ -11,10 +11,11 @@ export default function AdminGallery() {
 
   const [newItem, setNewItem] = useState({
     title: "",
-    base64Data: "",
     category: "General",
     description: "",
   });
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -58,36 +59,57 @@ export default function AdminGallery() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check size limit (e.g., 4MB limit to avoid Vercel payload issues)
-    if (file.size > 4 * 1024 * 1024) {
-      alert("File is too large. Please select a file smaller than 4MB.");
+    // Check size limit: 50MB
+    if (file.size > 50 * 1024 * 1024) {
+      alert("File is too large. Please select a file smaller than 50MB.");
       if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setNewItem({ ...newItem, base64Data: event.target?.result as string, title: file.name.split('.')[0] });
-    };
-    reader.readAsDataURL(file);
+    setSelectedFile(file);
+    setNewItem({ ...newItem, title: file.name.split('.')[0] });
   };
 
   const handleSaveManual = async () => {
-    if (!newItem.title.trim() || !newItem.base64Data) {
+    if (!newItem.title.trim() || !selectedFile) {
       setMsg("Error: Title and Media file are required.");
       return;
     }
     setSaving(true);
-    setMsg("");
+    setMsg("Uploading to Cloudinary... This may take a while for large files.");
+    
     try {
+      // 1. Upload to Cloudinary Directly
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+      formData.append("upload_preset", "saraswati_preset"); // Cloudinary Unauthenticated preset
+      
+      // We can use env var if exposed, or fallback to known cloud name
+      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dpgabobnc";
+      
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+        method: "POST",
+        body: formData
+      });
+      
+      const uploadData = await uploadRes.json();
+      
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error?.message || "Cloudinary upload failed");
+      }
+
+      setMsg("Saving to database...");
+
+      // 2. Save to Database
       const res = await fetch("/api/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: newItem.title.trim(),
           type: addType,
-          cloudinaryUrl: newItem.base64Data, // We reuse this field to store base64 string
-          thumbnailUrl: newItem.base64Data,
+          cloudinaryUrl: uploadData.secure_url,
+          cloudinaryPublicId: uploadData.public_id,
+          thumbnailUrl: uploadData.thumbnail_url || uploadData.secure_url,
           category: newItem.category.trim() || "General",
           description: newItem.description.trim(),
         }),
@@ -96,14 +118,15 @@ export default function AdminGallery() {
       if (data.success) {
         setMsg("Media added successfully!");
         setShowAddModal(false);
-        setNewItem({ title: "", base64Data: "", category: "General", description: "" });
+        setNewItem({ title: "", category: "General", description: "" });
+        setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         fetchItems();
       } else {
-        setMsg("Error: " + (data.error || "Failed to save media"));
+        setMsg("Error: " + (data.error || "Failed to save media to DB"));
       }
-    } catch {
-      setMsg("Error: Network failure. File might be too large.");
+    } catch (err: any) {
+      setMsg("Error: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -111,7 +134,8 @@ export default function AdminGallery() {
 
   const openModalFor = (type: "photo" | "video") => {
     setAddType(type);
-    setNewItem({ title: "", base64Data: "", category: "General", description: "" });
+    setNewItem({ title: "", category: "General", description: "" });
+    setSelectedFile(null);
     setShowAddModal(true);
   };
 
@@ -137,7 +161,7 @@ export default function AdminGallery() {
       </div>
 
       {msg && (
-        <div style={{ padding: "12px", borderRadius: "6px", marginBottom: "20px", background: msg.startsWith("Error") ? "#ffebee" : "#e8f5e9", color: msg.startsWith("Error") ? "#c62828" : "#2e7d32" }}>
+        <div style={{ padding: "12px", borderRadius: "6px", marginBottom: "20px", background: msg.startsWith("Error") ? "#ffebee" : (msg.includes("Uploading") ? "#fff3e0" : "#e8f5e9"), color: msg.startsWith("Error") ? "#c62828" : (msg.includes("Uploading") ? "#e65100" : "#2e7d32"), fontWeight: msg.includes("Uploading") ? "bold" : "normal" }}>
           {msg}
         </div>
       )}
@@ -197,8 +221,8 @@ export default function AdminGallery() {
                 ref={fileInputRef}
                 style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
               />
-              {newItem.base64Data && (
-                <p style={{ margin: "5px 0 0", fontSize: "0.8rem", color: "green" }}>File selected and ready to save.</p>
+              {selectedFile && (
+                <p style={{ margin: "5px 0 0", fontSize: "0.8rem", color: "green" }}>{selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB) selected.</p>
               )}
             </div>
 
