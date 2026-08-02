@@ -135,17 +135,19 @@ export default function Home() {
         </div>
         <div className={styles.featuresGrid}>
           {[
-            { icon: "📚", title: "Academic Excellence", desc: "Rigorous curriculum designed to challenge and inspire every student to reach their highest potential." },
-            { icon: "🎨", title: "Cultural Programs", desc: "Rich co-curricular programs — dance, music, art, drama — celebrating India's diverse heritage." },
-            { icon: "⚽", title: "Sports & Fitness", desc: "State-of-the-art sports facilities encouraging physical health, teamwork, and competitive spirit." },
-            { icon: "🔬", title: "Modern Labs", desc: "Fully equipped science and computer labs giving hands-on learning experiences to students." },
-            { icon: "🌱", title: "Holistic Development", desc: "We nurture character, confidence, and compassion alongside academic skills." },
-            { icon: "👨‍👩‍👧", title: "Parent Partnership", desc: "We keep parents closely involved through regular PTMs, digital updates, and open communication." },
+            { image: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=600&auto=format&fit=crop", title: "Academic Excellence", desc: "Rigorous curriculum designed to challenge and inspire every student to reach their highest potential." },
+            { image: "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?q=80&w=600&auto=format&fit=crop", title: "Cultural Programs", desc: "Rich co-curricular programs — dance, music, art, drama — celebrating India's diverse heritage." },
+            { image: "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?q=80&w=600&auto=format&fit=crop", title: "Sports & Fitness", desc: "State-of-the-art sports facilities encouraging physical health, teamwork, and competitive spirit." },
+            { image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=600&auto=format&fit=crop", title: "Modern Labs", desc: "Fully equipped science and computer labs giving hands-on learning experiences to students." },
+            { image: "https://images.unsplash.com/photo-1529390079861-591de354faf5?q=80&w=600&auto=format&fit=crop", title: "Holistic Development", desc: "We nurture character, confidence, and compassion alongside academic skills." },
+            { image: "https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=600&auto=format&fit=crop", title: "Parent Partnership", desc: "We keep parents closely involved through regular PTMs, digital updates, and open communication." },
           ].map((f) => (
             <div key={f.title} className={`${styles.featureCard} card-hover`}>
-              <div className={styles.featureIcon}>{f.icon}</div>
-              <h3 className={styles.featureTitle}>{f.title}</h3>
-              <p className={styles.featureDesc}>{f.desc}</p>
+              <img src={f.image} alt={f.title} className={styles.featureImage} />
+              <div className={styles.featureContent}>
+                <h3 className={styles.featureTitle}>{f.title}</h3>
+                <p className={styles.featureDesc}>{f.desc}</p>
+              </div>
             </div>
           ))}
         </div>

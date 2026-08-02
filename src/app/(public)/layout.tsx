@@ -1,6 +1,7 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import AnnouncementBar from "@/components/AnnouncementBar";
+import FloatingWhatsApp from "@/components/FloatingWhatsApp";
 import { db } from "@/db";
 import { announcements, contactInfo, siteSettings } from "@/db/schema";
 import { eq, asc } from "drizzle-orm";
@@ -48,6 +49,7 @@ export default async function PublicLayout({
       <Header phone={phone} schoolName={schoolName} logoUrl={logoUrl} />
       <main style={{ flex: 1 }}>{children}</main>
       <Footer schoolName={schoolName} tagline={tagline} address={address} phone={phone} email={email} logoUrl={logoUrl} />
+      <FloatingWhatsApp />
     </div>
   );
 }
