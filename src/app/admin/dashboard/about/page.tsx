@@ -1,6 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
-import { CldUploadWidget } from "next-cloudinary";
+import { useState, useEffect, useRef } from "react";
 
 export default function AdminAbout() {
   const [items, setItems] = useState<any[]>([]);
@@ -8,6 +7,9 @@ export default function AdminAbout() {
   const [editItem, setEditItem] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState("");
+  
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchItems = async () => {
     setLoading(true);
@@ -24,25 +26,75 @@ export default function AdminAbout() {
 
   useEffect(() => { fetchItems(); }, []);
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      alert("File is too large. Please select a photo smaller than 10MB.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setSelectedFile(file);
+  };
+
   const handleSave = async () => {
     setSaving(true);
     setMsg("");
+    
+    let finalPhotoUrl = editItem.photoUrl;
+    let finalPhotoPublicId = editItem.photoPublicId;
+    
     try {
+      if (selectedFile) {
+        setMsg("Uploading photo...");
+        const sigRes = await fetch("/api/cloudinary-sign");
+        const sigData = await sigRes.json();
+        
+        if (!sigRes.ok || !sigData.signature) {
+          throw new Error(sigData.error || "Failed to get upload signature");
+        }
+        
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("api_key", sigData.apiKey);
+        formData.append("timestamp", sigData.timestamp);
+        formData.append("signature", sigData.signature);
+        
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/image/upload`, {
+          method: "POST",
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        if (!uploadRes.ok) throw new Error(uploadData.error?.message || "Cloudinary upload failed");
+        
+        finalPhotoUrl = uploadData.secure_url;
+        finalPhotoPublicId = uploadData.public_id;
+      }
+      
+      setMsg("Saving to database...");
+      
       const res = await fetch("/api/about", {
         method: editItem.id ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editItem),
+        body: JSON.stringify({
+          ...editItem,
+          photoUrl: finalPhotoUrl,
+          photoPublicId: finalPhotoPublicId
+        }),
       });
       const data = await res.json();
       if (data.success) {
         setMsg("Saved successfully!");
         setEditItem(null);
+        setSelectedFile(null);
         fetchItems();
       } else {
         setMsg("Error: " + (data.error || "Unknown error"));
       }
-    } catch (err) {
-      setMsg("Network error");
+    } catch (err: any) {
+      setMsg("Error: " + err.message);
     } finally {
       setSaving(false);
     }
@@ -61,14 +113,17 @@ export default function AdminAbout() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
         <h1 style={{ fontSize: "2rem", color: "var(--secondary-color)" }}>About Us Manager</h1>
         <button
-          onClick={() => setEditItem({ role: "director", name: "", designation: "", message: "", photoUrl: "", photoPublicId: "" })}
+          onClick={() => {
+            setEditItem({ role: "director", name: "", designation: "", message: "", photoUrl: "", photoPublicId: "" });
+            setSelectedFile(null);
+          }}
           style={{ padding: "10px 20px", background: "var(--primary-color)", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
         >
           + Add New
         </button>
       </div>
 
-      {msg && <div style={{ padding: "12px", borderRadius: "6px", marginBottom: "20px", background: msg.startsWith("Error") ? "#ffebee" : "#e8f5e9", color: msg.startsWith("Error") ? "#c62828" : "#2e7d32" }}>{msg}</div>}
+      {msg && <div style={{ padding: "12px", borderRadius: "6px", marginBottom: "20px", background: msg.startsWith("Error") ? "#ffebee" : "#e8f5e9", color: msg.startsWith("Error") ? "#c62828" : "#2e7d32", fontWeight: msg.includes("Uploading") ? "bold" : "normal" }}>{msg}</div>}
 
       {loading ? (
         <p>Loading...</p>
@@ -84,8 +139,11 @@ export default function AdminAbout() {
                   <p style={{ margin: 0, color: "#888", fontSize: "0.9rem" }}>{item.message?.substring(0, 100)}...</p>
                 </div>
                 <button
-                  onClick={() => setEditItem({ ...item })}
-                  style={{ padding: "8px 16px", background: "#e3f2fd", color: "#1565c0", border: "none", borderRadius: "6px", cursor: "pointer" }}
+                  onClick={() => {
+                    setEditItem({ ...item });
+                    setSelectedFile(null);
+                  }}
+                  style={{ padding: "8px 16px", background: "#e3f2fd", color: "#1565c0", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
                 >
                   Edit
                 </button>
@@ -135,37 +193,32 @@ export default function AdminAbout() {
 
             <div style={{ marginBottom: "20px" }}>
               <label style={{ display: "block", marginBottom: "8px", fontWeight: "500" }}>Photo</label>
-              {editItem.photoUrl && <img src={editItem.photoUrl} alt="preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "10px", display: "block" }} />}
+              {editItem.photoUrl && !selectedFile && (
+                <img src={editItem.photoUrl} alt="preview" style={{ width: "80px", height: "80px", borderRadius: "50%", objectFit: "cover", marginBottom: "10px", display: "block" }} />
+              )}
               
-              <div style={{ display: "flex", gap: "10px", alignItems: "center", marginBottom: "10px" }}>
+              <div style={{ marginBottom: "10px" }}>
                 <input 
-                  value={editItem.photoUrl || ""} 
-                  onChange={e => setEditItem({ ...editItem, photoUrl: e.target.value })}
-                  placeholder="Paste direct Image URL..."
-                  style={{ flex: 1, padding: "10px", borderRadius: "6px", border: "1px solid #ddd" }}
+                  type="file" 
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  ref={fileInputRef}
+                  style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ddd", boxSizing: "border-box" }}
                 />
-                <CldUploadWidget uploadPreset="saraswati_preset" onSuccess={(result: any) => {
-                  const info = result.info;
-                  setEditItem({ ...editItem, photoUrl: info.secure_url, photoPublicId: info.public_id });
-                }}>
-                  {({ open }) => (
-                    <button type="button" onClick={() => open()}
-                      style={{ padding: "10px 16px", background: "#f5f5f5", border: "1px solid #ddd", borderRadius: "6px", cursor: "pointer", whiteSpace: "nowrap" }}>
-                      ☁️ Upload
-                    </button>
-                  )}
-                </CldUploadWidget>
+                {selectedFile && (
+                  <p style={{ margin: "5px 0 0", fontSize: "0.8rem", color: "green" }}>{selectedFile.name} selected. Will replace existing photo on save.</p>
+                )}
               </div>
             </div>
 
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
               <button onClick={() => setEditItem(null)}
-                style={{ padding: "10px 20px", background: "#f5f5f5", border: "none", borderRadius: "6px", cursor: "pointer" }}>
+                style={{ padding: "10px 20px", background: "#f5f5f5", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}>
                 Cancel
               </button>
               <button onClick={handleSave} disabled={saving}
-                style={{ padding: "10px 20px", background: "var(--primary-color)", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", opacity: saving ? 0.7 : 1 }}>
-                {saving ? "Saving..." : "Save"}
+                style={{ padding: "10px 20px", background: "var(--primary-color)", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", opacity: saving ? 0.7 : 1, fontWeight: "bold" }}>
+                {saving ? "Saving..." : "Save Data"}
               </button>
             </div>
           </div>
