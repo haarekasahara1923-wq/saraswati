@@ -41,6 +41,7 @@
   line-height: 1.85;
   position: relative;
   z-index: 1;
+  text-align: justify;
 }
 
 /* ===== CONTENT SECTION (Director / Principal) ===== */
