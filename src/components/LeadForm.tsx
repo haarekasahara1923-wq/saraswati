@@ -40,54 +40,68 @@ Please contact me back.`;
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
         <button className={styles.closeButton} onClick={onClose}>&times;</button>
-        <h2 className={styles.title}>Contact Us via WhatsApp</h2>
+        
+        <div className={styles.headerIcon}>🎓</div>
+        <h2 className={styles.title}>Admission Enquiry</h2>
+        <p className={styles.subtitle}>Fill in your details and we&apos;ll reach out via WhatsApp</p>
         
         <form onSubmit={handleSubmit}>
           <div className={styles.formGroup}>
             <label className={styles.label}>Full Name *</label>
-            <input 
-              type="text" 
-              required 
-              value={formData.name} 
-              onChange={e => setFormData({...formData, name: e.target.value})} 
-            />
+            <div className={styles.inputWrap}>
+              <input 
+                type="text" 
+                required 
+                placeholder="e.g. Ramesh Kumar"
+                value={formData.name} 
+                onChange={e => setFormData({...formData, name: e.target.value})} 
+              />
+            </div>
           </div>
           
           <div className={styles.formGroup}>
             <label className={styles.label}>Contact Number *</label>
-            <input 
-              type="tel" 
-              required 
-              value={formData.contact} 
-              onChange={e => setFormData({...formData, contact: e.target.value})} 
-            />
+            <div className={styles.inputWrap}>
+              <input 
+                type="tel" 
+                required 
+                placeholder="+91 98765 43210"
+                value={formData.contact} 
+                onChange={e => setFormData({...formData, contact: e.target.value})} 
+              />
+            </div>
           </div>
           
           <div className={styles.formGroup}>
             <label className={styles.label}>Address *</label>
-            <input 
-              type="text" 
-              required 
-              value={formData.address} 
-              onChange={e => setFormData({...formData, address: e.target.value})} 
-            />
+            <div className={styles.inputWrap}>
+              <input 
+                type="text" 
+                required 
+                placeholder="Your city / area"
+                value={formData.address} 
+                onChange={e => setFormData({...formData, address: e.target.value})} 
+              />
+            </div>
           </div>
           
           <div className={styles.formGroup}>
             <label className={styles.label}>Purpose *</label>
-            <select 
-              value={formData.purpose} 
-              onChange={e => setFormData({...formData, purpose: e.target.value})}
-            >
-              <option value="Admission Inquiry">Admission Inquiry</option>
-              <option value="General Inquiry">General Inquiry</option>
-              <option value="Job Application">Job Application</option>
-              <option value="Other">Other</option>
-            </select>
+            <div className={styles.inputWrap}>
+              <select 
+                value={formData.purpose} 
+                onChange={e => setFormData({...formData, purpose: e.target.value})}
+              >
+                <option value="Admission Inquiry">Admission Inquiry</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Job Application">Job Application</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
           </div>
           
           <button type="submit" className={styles.submitBtn}>
-            📱 Send on WhatsApp
+            📱 Send via WhatsApp
           </button>
         </form>
       </div>
