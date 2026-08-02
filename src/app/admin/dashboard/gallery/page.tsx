@@ -79,15 +79,23 @@ export default function AdminGallery() {
     setMsg("Uploading to Cloudinary... This may take a while for large files.");
     
     try {
-      // 1. Upload to Cloudinary Directly
+      // 1. Get Signature from Backend
+      const sigRes = await fetch("/api/cloudinary-sign");
+      const sigData = await sigRes.json();
+      
+      if (!sigRes.ok || !sigData.signature) {
+        throw new Error(sigData.error || "Failed to get upload signature. Backend not configured properly.");
+      }
+
+      // 2. Upload to Cloudinary Directly using Signed Upload
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("upload_preset", "saraswati_preset"); // Cloudinary Unauthenticated preset
+      formData.append("api_key", sigData.apiKey);
+      formData.append("timestamp", sigData.timestamp);
+      formData.append("signature", sigData.signature);
       
-      // We can use env var if exposed, or fallback to known cloud name
-      const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dpgabobnc";
-      
-      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
+      // Use /auto/upload to handle both images and videos properly
+      const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${sigData.cloudName}/auto/upload`, {
         method: "POST",
         body: formData
       });
@@ -100,7 +108,7 @@ export default function AdminGallery() {
 
       setMsg("Saving to database...");
 
-      // 2. Save to Database
+      // 3. Save to Database
       const res = await fetch("/api/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
