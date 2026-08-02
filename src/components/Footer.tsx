@@ -7,6 +7,7 @@ interface FooterProps {
   address?: string;
   phone?: string;
   email?: string;
+  logoUrl?: string;
 }
 
 export default function Footer({
@@ -15,12 +16,20 @@ export default function Footer({
   address = "Ikhara, Morar, Gwalior (MP)",
   phone = "+91-9174081035",
   email = "info@saraswaticonventschool.com",
+  logoUrl,
 }: FooterProps) {
   return (
     <footer className={styles.footer}>
       <div className={styles.footerContent}>
         <div className={styles.footerSection}>
-          <h3 className={styles.footerTitle}>{schoolName}</h3>
+          <div style={{ display: "flex", alignItems: "center", gap: "15px", marginBottom: "15px" }}>
+            <img 
+              src={logoUrl || "/images/logo.jpg"} 
+              alt={`${schoolName} Logo`} 
+              style={{ width: '50px', height: '50px', borderRadius: '50%', objectFit: 'cover' }}
+            />
+            <h3 className={styles.footerTitle} style={{ margin: 0 }}>{schoolName}</h3>
+          </div>
           <p className={styles.footerText}>{tagline}</p>
         </div>
         

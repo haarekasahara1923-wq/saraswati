@@ -11,12 +11,28 @@ export default function AdminAbout() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [aboutSchoolText, setAboutSchoolText] = useState("");
+  const [visionMissionText, setVisionMissionText] = useState("");
+  const [savingGeneral, setSavingGeneral] = useState(false);
+
   const fetchItems = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/about");
-      const data = await res.json();
-      if (data.success) setItems(data.items);
+      const [resAbout, resSettings] = await Promise.all([
+        fetch("/api/about"),
+        fetch("/api/settings")
+      ]);
+      const dataAbout = await resAbout.json();
+      const dataSettings = await resSettings.json();
+      
+      if (dataAbout.success) setItems(dataAbout.items);
+      
+      if (dataSettings.success) {
+        const settingsMap: Record<string, string> = {};
+        dataSettings.settings.forEach((s: any) => { settingsMap[s.key] = s.value; });
+        setAboutSchoolText(settingsMap["about_school_text"] || "");
+        setVisionMissionText(settingsMap["vision_mission_text"] || "");
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -25,6 +41,33 @@ export default function AdminAbout() {
   };
 
   useEffect(() => { fetchItems(); }, []);
+
+  const handleSaveGeneralInfo = async () => {
+    setSavingGeneral(true);
+    setMsg("");
+    try {
+      const res = await fetch("/api/settings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          settings: [
+            { key: "about_school_text", value: aboutSchoolText },
+            { key: "vision_mission_text", value: visionMissionText }
+          ]
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMsg("General info saved successfully!");
+      } else {
+        setMsg("Error: " + (data.error || "Unknown"));
+      }
+    } catch (err) {
+      setMsg("Network error");
+    } finally {
+      setSavingGeneral(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -129,6 +172,38 @@ export default function AdminAbout() {
         <p>Loading...</p>
       ) : (
         <div>
+          <div style={{ ...cardStyle, background: "#f8f9fa", border: "1px solid #ddd" }}>
+            <h2 style={{ marginTop: 0 }}>School General Information</h2>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "600" }}>About Saraswati Convent School</label>
+              <textarea
+                value={aboutSchoolText}
+                onChange={e => setAboutSchoolText(e.target.value)}
+                rows={4}
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", resize: "vertical" }}
+                placeholder="A legacy of education and character building..."
+              />
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "600" }}>Vision & Mission</label>
+              <textarea
+                value={visionMissionText}
+                onChange={e => setVisionMissionText(e.target.value)}
+                rows={4}
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", resize: "vertical" }}
+                placeholder="To provide high-quality education..."
+              />
+            </div>
+            <button
+              onClick={handleSaveGeneralInfo}
+              disabled={savingGeneral}
+              style={{ padding: "10px 20px", background: "#2e7d32", color: "white", border: "none", borderRadius: "6px", cursor: "pointer", fontWeight: "bold" }}
+            >
+              {savingGeneral ? "Saving..." : "Save General Info"}
+            </button>
+          </div>
+
+          <h2 style={{ marginTop: "40px", color: "var(--secondary-color)" }}>Director & Principal Details</h2>
           {items.map(item => (
             <div key={item.id} style={cardStyle}>
               <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>

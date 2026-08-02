@@ -37,6 +37,7 @@ export default async function PublicLayout({
 
   const schoolName = settingsMap["school_name"] || "Saraswati Convent School";
   const tagline = settingsMap["school_tagline"] || "Nurturing minds and shaping futures with quality education in Gwalior.";
+  const logoUrl = settingsMap["school_logo_url"] || "";
   const phone = contact?.phone || "+91-9174081035";
   const email = contact?.email || "info@saraswaticonventschool.com";
   const address = contact?.address || "Ikhara, Morar, Gwalior (MP)";
@@ -44,9 +45,9 @@ export default async function PublicLayout({
   return (
     <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <AnnouncementBar announcements={announcementTexts} />
-      <Header phone={phone} schoolName={schoolName} />
+      <Header phone={phone} schoolName={schoolName} logoUrl={logoUrl} />
       <main style={{ flex: 1 }}>{children}</main>
-      <Footer schoolName={schoolName} tagline={tagline} address={address} phone={phone} email={email} />
+      <Footer schoolName={schoolName} tagline={tagline} address={address} phone={phone} email={email} logoUrl={logoUrl} />
     </div>
   );
 }

@@ -7,9 +7,14 @@ import styles from "./Header.module.css";
 interface HeaderProps {
   phone?: string;
   schoolName?: string;
+  logoUrl?: string;
 }
 
-export default function Header({ phone = "+919174081035", schoolName = "Saraswati Convent School" }: HeaderProps) {
+export default function Header({ 
+  phone = "+919174081035", 
+  schoolName = "Saraswati Convent School",
+  logoUrl 
+}: HeaderProps) {
   const pathname = usePathname();
 
   const navLinks = [
@@ -22,12 +27,10 @@ export default function Header({ phone = "+919174081035", schoolName = "Saraswat
   return (
     <header className={styles.header}>
       <Link href="/" className={styles.logoContainer}>
-        <Image 
-          src="/images/logo.jpg" 
-          alt="Saraswati Convent School Logo" 
-          width={60} 
-          height={60} 
-          style={{ borderRadius: '50%' }}
+        <img 
+          src={logoUrl || "/images/logo.jpg"} 
+          alt={`${schoolName} Logo`} 
+          style={{ width: '60px', height: '60px', borderRadius: '50%', objectFit: 'cover' }}
         />
         <div className={styles.schoolName}>
           {schoolName}

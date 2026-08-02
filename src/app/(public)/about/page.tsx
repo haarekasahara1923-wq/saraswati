@@ -1,20 +1,31 @@
 import styles from "./about.module.css";
 import { db } from "@/db";
-import { aboutContent } from "@/db/schema";
+import { aboutContent, siteSettings } from "@/db/schema";
 
 export const revalidate = 0;
 
 export default async function AboutPage() {
-  const items = await db.select().from(aboutContent);
+  const [items, settings] = await Promise.all([
+    db.select().from(aboutContent),
+    db.select().from(siteSettings)
+  ]);
+
+  const settingsMap: Record<string, string> = {};
+  settings.forEach(s => {
+    if (s.value) settingsMap[s.key] = s.value;
+  });
 
   const director = items.find((i) => i.role === "director");
   const principal = items.find((i) => i.role === "principal");
+
+  const aboutText = settingsMap["about_school_text"] || "A legacy of education and character building.";
+  const visionMissionText = settingsMap["vision_mission_text"] || "To provide high-quality education that empowers students to become responsible, confident, and compassionate global citizens.";
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>About Saraswati Convent School</h1>
-        <p className={styles.subtitle}>A legacy of education and character building</p>
+        <p className={styles.subtitle} style={{ whiteSpace: "pre-wrap", maxWidth: "800px", margin: "0 auto" }}>{aboutText}</p>
       </div>
 
       <section className={styles.contentSection}>
@@ -70,13 +81,9 @@ export default async function AboutPage() {
       </section>
 
       <section className={styles.missionVision}>
-        <div className={styles.mvCard}>
-          <h3>Our Mission</h3>
-          <p>To provide high-quality education that empowers students to become responsible, confident, and compassionate global citizens.</p>
-        </div>
-        <div className={styles.mvCard}>
-          <h3>Our Vision</h3>
-          <p>To be a premier educational institution recognized for academic excellence and the holistic development of students.</p>
+        <div className={styles.mvCard} style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
+          <h3>Vision & Mission</h3>
+          <p style={{ whiteSpace: "pre-wrap" }}>{visionMissionText}</p>
         </div>
       </section>
     </div>
