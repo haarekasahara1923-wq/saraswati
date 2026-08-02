@@ -1,7 +1,7 @@
 .sidebar {
   width: 250px;
-  background-color: var(--secondary-color);
-  color: var(--white);
+  background-color: var(--bg-dark, #1A1A2E);
+  color: var(--white, #FFFFFF);
   height: 100vh;
   position: sticky;
   top: 0;
@@ -16,7 +16,7 @@
 }
 
 .header h2 {
-  color: var(--white);
+  color: var(--white, #FFFFFF);
   font-size: 1.2rem;
   margin-top: 10px;
 }
@@ -39,8 +39,8 @@
 
 .link:hover, .active {
   background-color: rgba(255,255,255,0.1);
-  color: var(--white);
-  border-left: 4px solid var(--primary-color);
+  color: var(--white, #FFFFFF);
+  border-left: 4px solid var(--primary, #E67E22);
 }
 
 .logoutBtn {
