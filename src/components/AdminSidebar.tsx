@@ -66,12 +66,14 @@ export default function AdminSidebar() {
           ))}
         </nav>
 
-        <button 
-          onClick={() => alert("Coming soon")}
+        <a
+          href="https://schoolpro.wapiflow.site"
+          target="_blank"
+          rel="noopener noreferrer"
           className={styles.manageSchoolBtn}
         >
           🏫 Manage School
-        </button>
+        </a>
 
         <button onClick={handleLogout} className={styles.logoutBtn}>
           🚪 Logout
