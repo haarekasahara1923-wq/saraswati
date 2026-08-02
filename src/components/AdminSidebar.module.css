@@ -60,6 +60,24 @@
   background-color: rgba(255,255,255,0.1);
 }
 
+.manageSchoolBtn {
+  padding: 12px 20px;
+  background-color: var(--primary, #E67E22);
+  color: var(--white, #FFFFFF);
+  text-align: center;
+  font-weight: bold;
+  text-decoration: none;
+  display: block;
+  margin: 10px 20px 20px 20px;
+  border-radius: 8px;
+  transition: background-color 0.3s, transform 0.2s;
+}
+
+.manageSchoolBtn:hover {
+  background-color: #d67118;
+  transform: translateY(-2px);
+}
+
 .hamburger {
   display: none;
   position: fixed;

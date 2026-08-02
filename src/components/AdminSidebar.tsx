@@ -66,6 +66,13 @@ export default function AdminSidebar() {
           ))}
         </nav>
 
+        <a 
+          href="https://coachpro.wapiflow.site" 
+          className={styles.manageSchoolBtn}
+        >
+          🏫 Manage School
+        </a>
+
         <button onClick={handleLogout} className={styles.logoutBtn}>
           🚪 Logout
         </button>
