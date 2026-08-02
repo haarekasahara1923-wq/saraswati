@@ -55,8 +55,7 @@ export default async function AboutPage() {
           </div>
         </div>
 
-        {/* Principal */}
-        <div className={styles.messageCard} style={{ flexDirection: "row-reverse" }}>
+        <div className={`${styles.messageCard} ${styles.reverseCard}`}>
           <div className={styles.imagePlaceholder}>
             {principal?.photoUrl ? (
               <img
