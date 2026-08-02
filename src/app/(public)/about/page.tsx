@@ -19,7 +19,8 @@ export default async function AboutPage() {
   const principal = items.find((i) => i.role === "principal");
 
   const aboutText = settingsMap["about_school_text"] || "A legacy of education and character building.";
-  const visionMissionText = settingsMap["vision_mission_text"] || "To provide high-quality education that empowers students to become responsible, confident, and compassionate global citizens.";
+  const visionText = settingsMap["vision_text"] || "To be a premier educational institution recognized for academic excellence and the holistic development of students.";
+  const missionText = settingsMap["mission_text"] || "To provide high-quality education that empowers students to become responsible, confident, and compassionate global citizens.";
 
   return (
     <div className={styles.container}>
@@ -81,9 +82,13 @@ export default async function AboutPage() {
       </section>
 
       <section className={styles.missionVision}>
-        <div className={styles.mvCard} style={{ width: "100%", maxWidth: "800px", margin: "0 auto" }}>
-          <h3>Vision & Mission</h3>
-          <p style={{ whiteSpace: "pre-wrap" }}>{visionMissionText}</p>
+        <div className={styles.mvCard}>
+          <h3>Our Vision</h3>
+          <p style={{ whiteSpace: "pre-wrap" }}>{visionText}</p>
+        </div>
+        <div className={styles.mvCard}>
+          <h3>Our Mission</h3>
+          <p style={{ whiteSpace: "pre-wrap" }}>{missionText}</p>
         </div>
       </section>
     </div>

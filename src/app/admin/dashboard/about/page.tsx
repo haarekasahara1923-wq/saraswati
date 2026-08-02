@@ -12,7 +12,8 @@ export default function AdminAbout() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [aboutSchoolText, setAboutSchoolText] = useState("");
-  const [visionMissionText, setVisionMissionText] = useState("");
+  const [visionText, setVisionText] = useState("");
+  const [missionText, setMissionText] = useState("");
   const [savingGeneral, setSavingGeneral] = useState(false);
 
   const fetchItems = async () => {
@@ -31,7 +32,8 @@ export default function AdminAbout() {
         const settingsMap: Record<string, string> = {};
         dataSettings.settings.forEach((s: any) => { settingsMap[s.key] = s.value; });
         setAboutSchoolText(settingsMap["about_school_text"] || "");
-        setVisionMissionText(settingsMap["vision_mission_text"] || "");
+        setVisionText(settingsMap["vision_text"] || "");
+        setMissionText(settingsMap["mission_text"] || "");
       }
     } catch (err) {
       console.error(err);
@@ -52,7 +54,8 @@ export default function AdminAbout() {
         body: JSON.stringify({
           settings: [
             { key: "about_school_text", value: aboutSchoolText },
-            { key: "vision_mission_text", value: visionMissionText }
+            { key: "vision_text", value: visionText },
+            { key: "mission_text", value: missionText }
           ]
         }),
       });
@@ -185,13 +188,23 @@ export default function AdminAbout() {
               />
             </div>
             <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", marginBottom: "5px", fontWeight: "600" }}>Vision & Mission</label>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "600" }}>Our Vision</label>
               <textarea
-                value={visionMissionText}
-                onChange={e => setVisionMissionText(e.target.value)}
-                rows={4}
+                value={visionText}
+                onChange={e => setVisionText(e.target.value)}
+                rows={3}
                 style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", resize: "vertical" }}
-                placeholder="To provide high-quality education..."
+                placeholder="To be a premier educational institution recognized for academic excellence..."
+              />
+            </div>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "5px", fontWeight: "600" }}>Our Mission</label>
+              <textarea
+                value={missionText}
+                onChange={e => setMissionText(e.target.value)}
+                rows={3}
+                style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #ccc", resize: "vertical" }}
+                placeholder="To provide high-quality education that empowers students..."
               />
             </div>
             <button
